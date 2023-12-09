@@ -1,0 +1,33 @@
+{
+    // image being used
+     "image": "mcr.microsoft.com/devcontainers/base:ubuntu",
+    // set minimum cpu
+     "hostRequirements": {
+         "cpus": 2
+     },
+     "customizations": {
+         // install some vscode extensions
+         "vscode": {
+             "extensions": [
+                 "dbaeumer.vscode-eslint",
+                 "github.vscode-pull-request-github",
+                 "eamodio.gitlens",
+                 "christian-kohler.npm-intellisense"
+             ]
+         }
+     },
+     // connect to remote server
+     "forwardPorts": [8081],
+     // give port a label and open a preview of the app
+     "portsAttributes": {
+        "3000": {
+           "label": "Application",
+           "onAutoForward": "openPreview"
+         }
+    },
+    "features": {
+        "ghcr.io/devcontainers/features/python:1": {},
+        "ghcr.io/devcontainers-contrib/features/ansible:2": {},
+        "ghcr.io/devcontainers-contrib/features/yamllint:2": {}
+    }
+  }
