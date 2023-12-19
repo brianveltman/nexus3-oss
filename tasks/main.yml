@@ -30,6 +30,11 @@
 - name: Run installation tasks
   ansible.builtin.import_tasks: nexus_install.yml
 
+- name: Configure PostgresQL Database driver
+  ansible.builtin.include_tasks: setup_postgresql.yml
+  tags: ["nexus-postgresql"]
+  when: nexus_setup_postgres_db | bool
+
 - name: Configure apache reverse proxy
   ansible.builtin.include_tasks: httpd_reverse_proxy_config.yml
   when: httpd_setup_enable | bool

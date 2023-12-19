@@ -1,0 +1,46 @@
+---
+- name: check if {{ nexus_data_dir }}/etc/nexus.properties file is present
+  ansible.builtin.stat:
+    path: "{{ nexus_data_dir }}/etc/nexus.properties"
+  register: nexus_properties_file
+  tags: nexus-postgresql
+
+- name: Create {{ nexus_data_dir }}/etc/nexus.properties file
+  ansible.builtin.file:
+    state: touch
+    dest: "{{ nexus_data_dir }}/etc/nexus.properties"
+    owner: "{{ nexus_os_user }}"
+    group: "{{ nexus_os_group }}"
+    mode: "0640"
+  when: nexus_properties_file.stat.exists == false
+  tags: nexus-postgresql
+
+- name: Store Nexus data store in {{ nexus_data_dir }}/etc/nexus.properties file
+  ansible.builtin.lineinfile:
+    path: "{{ nexus_data_dir }}/etc/nexus.properties"
+    line: "nexus.datastore.enabled={{ nexus_enable_postgres_db }}"
+    firstmatch: true
+    insertafter: "EOF"
+    search_string: "nexus.datastore.enabled="
+    state: present
+  tags: nexus-postgresql
+
+# TODO: On first run only, add the following line
+# nexus.licenseFile=/path/to/your/sonatype-license.lic to {{ nexus_data_dir }}/etc/nexus.properties file
+
+- name: Add the username and password to the nexus.properties file
+  ansible.builtin.lineinfile:
+    path: "{{ nexus_data_dir }}/etc/nexus.properties"
+    line: "{{ item }}"
+    insertafter: "nexus.datastore.enabled={{ nexus_enable_postgres_db }}"
+    state: present
+  loop:
+    - "nexus.datastore.nexus.username={{ nexus_postgres_db_username }}"
+    - "nexus.datastore.nexus.password={{ nexus_postgres_db_password }}"
+    - "nexus.datastore.nexus.jdbcUrl=jdbc\\:postgresql\\://{{ nexus_postgres_db_host }}\\:{{ nexus_postgres_db_port }}/{{ nexus_postgres_db_name }}"
+    - "nexus.datastore.nexus.advanced=maximumPoolSize\\=200"
+    - "nexus.datastore.nexus.advanced=maxLifetime\\=840000"
+  tags: nexus-postgresql
+# NOTE: the JDBC URL format outside of the nexus-store.properties is in the following format (without the backslashes in the nexus-store.properties file): jdbc:postgresql://<database-host>:<database-port>/<database-name>
+# TODO: If using AWS Aurora as your database, you will need to include gssEncMode=disable as a query parameter of the JDBC URL.
+

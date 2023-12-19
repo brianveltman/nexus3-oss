@@ -21,6 +21,13 @@ nexus_tmp_dir: "{{ (ansible_os_family == 'RedHat') | ternary('/var/nexus-tmp', '
 nexus_script_dir: "{{ nexus_installation_dir }}/nexus-{{ nexus_version }}/etc/scripts"
 nexus_plugin_urls: []
 nexus_onboarding_wizard: false
+nexus_setup_postgres_db: false
+nexus_enable_postgres_db: false
+nexus_postgres_db_host: localhost
+nexus_postgres_db_name: nexus
+nexus_postgres_db_port: 5432
+nexus_postgres_db_username: nexus
+nexus_postgres_db_password: nexus
 
 # These are the default values for JVM Ram
 # don't touch those unless you have read
