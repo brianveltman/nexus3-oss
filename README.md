@@ -1,8 +1,7 @@
 [![Build Status](https://travis-ci.com/ansible-ThoTeam/nexus3-oss.svg?branch=main)](https://app.travis-ci.com/github/ansible-ThoTeam/nexus3-oss)
 [![GitHub release (latest by date)](https://img.shields.io/github/v/release/ansible-ThoTeam/nexus3-oss)](https://github.com/ansible-ThoTeam/nexus3-oss/releases/latest)
 [![GitHub commits since latest release](https://img.shields.io/github/commits-since/ansible-ThoTeam/nexus3-oss/latest)](https://github.com/ansible-ThoTeam/nexus3-oss/commits/main)
-[![Ansible Quality Score](https://img.shields.io/ansible/quality/22637?label=Galaxy%20quality%20score)](https://galaxy.ansible.com/ansible-thoteam/nexus3-oss)
-[![Ansible Role](https://img.shields.io/ansible/role/d/22637?label=Galaxy%20downloads)](https://galaxy.ansible.com/ansible-thoteam/nexus3-oss)
+[![Ansible Role](https://img.shields.io/ansible/role/d/ansible-ThoTeam/nexus3-oss?label=Galaxy%20downloads)](https://galaxy.ansible.com/ui/standalone/roles/ansible-ThoTeam/nexus3-oss/)
 [![GitHub contributors](https://img.shields.io/github/contributors/ansible-ThoTeam/nexus3-oss)](https://github.com/ansible-ThoTeam/nexus3-oss/graphs/contributors)
 [![GitHub licence](https://img.shields.io/github/license/ansible-ThoTeam/nexus3-oss)](https://github.com/ansible-ThoTeam/nexus3-oss/blob/main/LICENSE.md)
 # Ansible Role: Nexus 3 OSS
@@ -170,8 +169,17 @@ the role. It can be used later in your playbook if needed (e.g. for an upgrade n
 Directory on target where the nexus package will be downloaded.
 
 **Important note**: if you intend to run the role periodically to maintain/provision your nexus install, you should make
-sure the downloaded files will persists between run. On RHEL/Centos specifically, you should change this dir to a location that
-is not cleaned up automatically. If the package file does not persit, it will be downloaded again which might cause an unnecessary restart of nexus.
+sure the downloaded files will persist between run. On RHEL/Centos specifically, you should change this dir to a location that
+is not cleaned up automatically. If the package file does not persist, it will be downloaded again which might cause an unnecessary restart of nexus.
+
+### Local tmp dir on controller
+```yaml
+nexus_local_tmp_dir: /tmp
+```
+
+This directory is used to create a local archive of groovy script prior to sending them to the target.
+On shared ansible controller, you should modify this path to one you own (e.g. `/home/<user>/tmp`).
+**Important:** this directory **must** exist.
 
 ### Nexus port, context path and listening IP
 ```yaml
@@ -190,10 +198,12 @@ your own proxy)
 ### Nexus OS user and group
 ```yaml
     nexus_os_group: 'nexus'
+    nexus_os_gid: 1000
     nexus_os_user: 'nexus'
+    nexus_os_uid: 1000
 ```
 
-User and group used to own the nexus files and run the service, those will be created by the role if absent.
+User and group used to own the nexus files and run the service, those will be created by the role if absent. If defined a uid and gid will be used apon creation.
 
 ```yaml
     nexus_os_user_home_dir: '/home/nexus'
@@ -529,6 +539,12 @@ Those items are combined with the following default values :
         roles: [] # references to other role names
 ```
 
+Besides creating roles, it's also possible to define a default role which will be applied to users and anonymous requests when Nexus can not find or map the according role. Default role can be defined using:
+
+```yaml
+nexus_default_role: "developers" # uses the 'developers' role to all users/requests without an explicitly assigned role. Default: ""
+```
+
 List of the [roles](https://help.sonatype.com/display/NXRM3/Roles) to setup.
 
 ### Users
@@ -712,6 +728,16 @@ nexus_repos_docker_group:
     v1_enabled: False
     member_repos:
       - docker-hosted-repo
+```
+
+```yaml
+nexus_repos_docker_hosted:
+  - name: some-docker-repo
+    blob_store: docker-blob
+    v1_enabled: false
+    write_policy: allow_once # Values: "allow", "allow_once" or "deny"
+    # When set, it will ignore the defined write_policy and allows to redeploy container images with the tag 'latest' only.
+    allow_redeploy_latest: true
 ```
 
 Maven, Pypi, Docker, Raw, Rubygems, Bower, NPM, Git-LFS, yum, apt, helm, r, p2, conda and go repository types:
