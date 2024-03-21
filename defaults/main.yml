@@ -29,6 +29,8 @@ nexus_postgres_db_name: nexus
 nexus_postgres_db_port: 5432
 nexus_postgres_db_username: nexus
 nexus_postgres_db_password: nexus
+nexus_postgres_max_lifetime: 840000
+nexus_postgres_max_pool_size: 200
 
 # These are the default values for JVM Ram
 # don't touch those unless you have read
