@@ -418,6 +418,105 @@
     # hard to run as a handler for time being
     - skip_ansible_lint
 
+- name: Prepare for Postgres Database
+  when: nexus_use_postgresql | bool # Improve to check for valid license
+  block:
+    - name: check if {{ nexus_data_dir }}/etc/nexus.properties file is present
+      ansible.builtin.stat:
+        path: "{{ nexus_data_dir }}/etc/nexus.properties"
+      register: nexus_properties_file
+      tags: nexus-postgresql
+
+    - name: Create {{ nexus_data_dir }}/etc directory
+      ansible.builtin.file:
+        state: directory
+        path: "{{ nexus_data_dir }}/etc"
+        owner: "{{ nexus_os_user }}"
+        group: "{{ nexus_os_group }}"
+        mode: "0750"
+      when: nexus_properties_file.stat.exists == false
+      tags: nexus-postgresql
+
+    - name: Create {{ nexus_data_dir }}/etc/nexus.properties file
+      ansible.builtin.file:
+        state: touch
+        dest: "{{ nexus_data_dir }}/etc/nexus.properties"
+        owner: "{{ nexus_os_user }}"
+        group: "{{ nexus_os_group }}"
+        mode: "0640"
+      when: nexus_properties_file.stat.exists == false
+      tags: nexus-postgresql
+
+    - name: check if {{ nexus_data_dir }}/etc/fabric/nexus-store.properties file is present
+      ansible.builtin.stat:
+        path: "{{ nexus_data_dir }}/etc/fabric/nexus-store.properties"
+      register: nexus_store_properties_file
+      tags: nexus-postgresql
+
+    - name: Create {{ nexus_data_dir }}/etc/fabric directory
+      ansible.builtin.file:
+        state: directory
+        path: "{{ nexus_data_dir }}/etc/fabric"
+        owner: "{{ nexus_os_user }}"
+        group: "{{ nexus_os_group }}"
+        mode: "0750"
+      when: nexus_store_properties_file.stat.exists == false
+      tags: nexus-postgresql
+
+    - name: Create {{ nexus_data_dir }}/etc/fabric/nexus-store.properties file
+      ansible.builtin.file:
+        state: touch
+        dest: "{{ nexus_data_dir }}/etc/fabric/nexus-store.properties"
+        owner: "{{ nexus_os_user }}"
+        group: "{{ nexus_os_group }}"
+        mode: "0640"
+      when: nexus_store_properties_file.stat.exists == false
+      tags: nexus-postgresql
+
+    - name: Store Nexus properties in {{ nexus_data_dir }}/etc/nexus.properties file
+      ansible.builtin.lineinfile:
+        path: "{{ nexus_data_dir }}/etc/nexus.properties"
+        line: "nexus.datastore.enabled=true"
+        firstmatch: true
+        insertafter: "EOF"
+        state: present
+      tags: nexus-postgresql
+
+    # copy file to target
+    - name: Copy the license file to the target
+      ansible.builtin.copy:
+        src: "license.lic"
+        dest: "{{ nexus_data_dir }}/etc/license.lic"
+        owner: "{{ nexus_os_user }}"
+        group: "{{ nexus_os_group }}"
+        mode: "0640"
+      tags: nexus-postgresql
+
+    - name: Store license in {{ nexus_data_dir }}/etc/nexus.properties file
+      ansible.builtin.lineinfile:
+        path: "{{ nexus_data_dir }}/etc/nexus.properties"
+        line: "nexus.licenseFile={{ nexus_data_dir }}/etc/license.lic"
+        firstmatch: true
+        insertafter: "EOF"
+        state: present
+      tags: nexus-postgresql
+
+    - name: Add the username and password to the environment variables
+      ansible.builtin.lineinfile:
+        dest: "{{ nexus_os_user_home_dir }}/.bashrc"
+        line: "{{ item }}"
+        insertafter: "EOF"
+        state: present
+      loop:
+        - "export NEXUS_DATASTORE_NEXUS_USERNAME={{ nexus_postgres_db_username }}"
+        - "export NEXUS_DATASTORE_NEXUS_PASSWORD={{ nexus_postgres_db_password }}"
+        - "export NEXUS_DATASTORE_NEXUS_JDBCURL=jdbc:postgresql://{{ nexus_postgres_db_host }}:{{ nexus_postgres_db_port }}/{{ nexus_postgres_db_name }}"
+        - "export NEXUS_DATASTORE_NEXUS_ADVANCED='maximumPoolSize={{ nexus_postgres_max_pool_size }}'"
+        - "export NEXUS_DATASTORE_NEXUS_ADVANCED='maxLifetime={{ nexus_postgres_max_lifetime }}'"
+      notify:
+        - nexus-service-stop
+      tags: nexus-postgresql
+
 - name: Run all notified handlers now
   ansible.builtin.meta: flush_handlers
 

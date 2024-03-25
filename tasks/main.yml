@@ -296,8 +296,3 @@
   ansible.builtin.include_tasks: create_task_each.yml
   with_items: "{{ nexus_scheduled_tasks + _nexus_backup_task | default([]) }}"
   when: nexus_run_provisionning | default(true) | bool
-
-- name: Configure PostgresQL Database driver
-  ansible.builtin.include_tasks: setup_postgresql.yml
-  tags: ["nexus-postgresql"]
-  when: nexus_setup_postgres_db | bool
