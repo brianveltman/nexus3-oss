@@ -7,8 +7,11 @@ nexus_public_hostname: localhost
 nexus_api_timeout: 45
 nexus_setup_postgres_db: true
 nexus_enable_postgres_db: false
+nexus_purge: true
+nexus_run_provisionning: true
 nexus_postgres_db_host: localhost
 nexus_postgres_db_name: nexus
+nexus_use_postgresql: true
 nexus_postgres_db_port: 5432
 nexus_postgres_db_username: nexus
 nexus_postgres_db_password: nexus
