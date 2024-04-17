@@ -6,13 +6,11 @@ httpd_ssl_cert_key_location: "{{ default_key }}"
 nexus_public_hostname: localhost
 nexus_api_timeout: 45
 nexus_purge: true
-nexus_run_provisionning: true
+nexus_run_provisionning: false
 
 # Postgres settings
-nexus_migrate_orientdb_to_postgres: true
-nexus_use_postgres: false
-nexus_setup_postgres_db: false
-nexus_enable_postgres_db: false
+#nexus_migrate_orientdb_to_postgres: true
+nexus_use_postgres: true
 
 nexus_postgres_db_host: postgresql-server
 nexus_postgres_db_name: nexus
