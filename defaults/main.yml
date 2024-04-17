@@ -32,8 +32,6 @@ nexus_migrate_orientdb_to_postgres: false
 # If you want to use PostgreSQL as the database for NEW installations, set the following to true
 nexus_use_postgres: false
 
-nexus_setup_postgres_db: false
-nexus_enable_postgres_db: false
 nexus_postgres_db_host: localhost
 nexus_postgres_db_name: nexus
 nexus_postgres_db_port: 5432
